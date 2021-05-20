@@ -6,11 +6,11 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import copy
 
 from lxml.etree import _Comment
-from lxml.html import builder as E
+from lxml.html import html_parser
 
 
 def convert_elem(src):
-    return getattr(E, src.tag.upper())(**src.attrib)
+    return html_parser.makeelement(src.tag, attrib=src.attrib)
 
 
 def adapt(src_tree, return_root=True, **kw):
@@ -22,10 +22,9 @@ def adapt(src_tree, return_root=True, **kw):
         for src_child in src.iterchildren():
             if isinstance(src_child, _Comment):
                 dest_child = copy.copy(src_child)
-                dest.append(dest_child)
             else:
                 dest_child = convert_elem(src_child)
                 dest_child.text, dest_child.tail = src_child.text, src_child.tail
                 stack.append((src_child, dest_child))
-                dest_child.parent = dest
+            dest.append(dest_child)
     return dest_root if return_root else dest_root.getroottree()
