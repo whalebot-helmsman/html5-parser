@@ -27,5 +27,5 @@ def adapt(src_tree, return_root=True, **kw):
                 dest_child = convert_elem(src_child)
                 dest_child.text, dest_child.tail = src_child.text, src_child.tail
                 stack.append((src_child, dest_child))
-            dest_child.parent = dest
+                dest_child.parent = dest
     return dest_root if return_root else dest_root.getroottree()
