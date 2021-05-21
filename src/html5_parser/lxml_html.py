@@ -4,6 +4,7 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 import copy
+import unicodedata
 
 from lxml.etree import _Comment
 from lxml.html import html_parser
@@ -11,6 +12,12 @@ from lxml.html import html_parser
 
 def convert_elem(src):
     return html_parser.makeelement(src.tag, attrib=src.attrib)
+
+
+def no_control_characters(value):
+    if not value:
+        return value
+    return ''.join(c for c in value if unicodedata.category(c)[0] != 'C')
 
 
 def adapt(src_tree, return_root=True, **kw):
@@ -24,7 +31,8 @@ def adapt(src_tree, return_root=True, **kw):
                 dest_child = copy.copy(src_child)
             else:
                 dest_child = convert_elem(src_child)
-                dest_child.text, dest_child.tail = src_child.text, src_child.tail
+                dest_child.text = no_control_characters(src_child.text)
+                dest_child.tail = no_control_characters(src_child.tail)
                 stack.append((src_child, dest_child))
             dest.append(dest_child)
     return dest_root if return_root else dest_root.getroottree()
