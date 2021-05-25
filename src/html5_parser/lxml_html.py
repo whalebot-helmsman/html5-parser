@@ -13,7 +13,10 @@ control_characters = [ui for ui in range(32)] + [0x7f]
 translator = str.maketrans({c: '' for c in control_characters})
 
 def convert_elem(src):
-    return html_parser.makeelement(src.tag, attrib=src.attrib)
+    return html_parser.makeelement(
+            src.tag,
+            attrib={k.translate(translator): v.translate(translator) for k, v in src.attrib.items()}
+        )
 
 
 def no_control_characters(value):
