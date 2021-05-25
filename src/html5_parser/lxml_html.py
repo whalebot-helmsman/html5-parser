@@ -3,20 +3,25 @@
 # License: Apache 2.0 Copyright: 2017, Kovid Goyal <kovid at kovidgoyal.net>
 
 from __future__ import absolute_import, division, print_function, unicode_literals
-import copy
 
 from lxml.etree import _Comment
-from lxml.html import html_parser
+from lxml.html import html_parser, HtmlComment
 
 
 control_characters = [ui for ui in range(32)] + [0x7f]
 translator = str.maketrans({c: '' for c in control_characters})
 
 def convert_elem(src):
-    return html_parser.makeelement(
-            src.tag,
-            attrib={k.translate(translator): v.translate(translator) for k, v in src.attrib.items()}
-        )
+    if isinstance(src, _Comment):
+        element = HtmlComment(src.text.translate(translator))
+    else:
+        attrib = {k.translate(translator): v.translate(translator) for k, v in src.attrib.items()}
+        element = html_parser.makeelement(
+                src.tag,
+                attrib=attrib,
+            )
+
+    return element
 
 
 def no_control_characters(value):
@@ -32,12 +37,9 @@ def adapt(src_tree, return_root=True, **kw):
     while stack:
         src, dest = stack.pop()
         for src_child in src.iterchildren():
-            if isinstance(src_child, _Comment):
-                dest_child = copy.copy(src_child)
-            else:
-                dest_child = convert_elem(src_child)
-                dest_child.text = no_control_characters(src_child.text)
-                dest_child.tail = no_control_characters(src_child.tail)
-                stack.append((src_child, dest_child))
+            dest_child = convert_elem(src_child)
+            dest_child.text = no_control_characters(src_child.text)
+            dest_child.tail = no_control_characters(src_child.tail)
+            stack.append((src_child, dest_child))
             dest.append(dest_child)
     return dest_root if return_root else dest_root.getroottree()
