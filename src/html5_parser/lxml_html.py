@@ -4,11 +4,13 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 import copy
-import unicodedata
 
 from lxml.etree import _Comment
 from lxml.html import html_parser
 
+
+control_characters = [ui for ui in range(32)] + [0x7f]
+translator = str.maketrans({c: '' for c in control_characters})
 
 def convert_elem(src):
     return html_parser.makeelement(src.tag, attrib=src.attrib)
@@ -17,7 +19,7 @@ def convert_elem(src):
 def no_control_characters(value):
     if not value:
         return value
-    return ''.join(c for c in value if unicodedata.category(c)[0] != 'C')
+    return value.translate(translator)
 
 
 def adapt(src_tree, return_root=True, **kw):
