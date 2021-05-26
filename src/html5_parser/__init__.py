@@ -12,6 +12,7 @@ from locale import getpreferredencoding
 
 if not hasattr(sys, 'generating_docs_via_sphinx'):
     from lxml import etree  # Must be imported before html_parser to initialize libxml
+    from lxml.html import HTMLParser
 
     try:
         from . import html_parser
@@ -200,7 +201,7 @@ def parse(
         sanitize_names=sanitize_names,
         stack_size=stack_size)
 
-    ans = etree.adopt_external_document(capsule)
+    ans = etree.adopt_external_document(capsule, parser=HTMLParser())
     if treebuilder == 'lxml':
         return ans.getroot() if return_root else ans
     m = importlib.import_module('html5_parser.' + treebuilder)
