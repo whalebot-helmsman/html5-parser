@@ -130,7 +130,8 @@ def parse(
     return_root=True,
     line_number_attr=None,
     sanitize_names=True,
-    stack_size=16 * 1024
+    stack_size=16 * 1024,
+    is_fragment=False,
 ):
     '''
     Parse the specified :attr:`html` and return the parsed representation.
@@ -199,7 +200,8 @@ def parse(
         maybe_xhtml=maybe_xhtml,
         line_number_attr=line_number_attr,
         sanitize_names=sanitize_names,
-        stack_size=stack_size)
+        stack_size=stack_size,
+        is_fragment=is_fragment)
 
     ans = etree.adopt_external_document(capsule, parser=HTMLParser())
     if treebuilder == 'lxml':
