@@ -36,11 +36,12 @@ convert_tree(GumboOutput *output, Options *opts) {
 }
 
 static inline libxml_doc*
-parse_with_options(const char* buffer, size_t buffer_length, Options *opts) {
+parse_with_options(const char* buffer, size_t buffer_length, Options *opts, bool is_fragment) {
     GumboOutput *output = NULL;
     libxml_doc* doc = NULL;
     Py_BEGIN_ALLOW_THREADS;
-    output = gumbo_parse_with_options(&(opts->gumbo_opts), buffer, buffer_length);
+    GumboTag tag = true == is_fragment ? GUMBO_TAG_HTML : GUMBO_TAG_LAST;
+    output = gumbo_parse_fragment(&(opts->gumbo_opts), buffer, buffer_length, tag, GUMBO_NAMESPACE_HTML);
     Py_END_ALLOW_THREADS;
     if (output == NULL) PyErr_NoMemory();
     else {
@@ -87,7 +88,7 @@ parse(PyObject UNUSED *self, PyObject *args, PyObject *kwds) {
     opts.sanitize_names = PyObject_IsTrue(sn);
     opts.gumbo_opts.use_xhtml_rules = PyObject_IsTrue(mx);
 
-    doc = parse_with_options(buffer, (size_t)sz, &opts);
+    doc = parse_with_options(buffer, (size_t)sz, &opts, false);
     if (!doc) return NULL;
     return encapsulate(doc);
 }
